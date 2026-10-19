@@ -39,156 +39,174 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .font-mono { font-family: 'JetBrains+Mono', monospace; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    
+    :root {
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
 
-    /* Subtle page backdrop */
+    /* Ambient soft background */
     .page-backdrop {
       background:
-        radial-gradient(1100px 380px at 85% -10%, rgba(99, 102, 241, 0.08), transparent 60%),
-        radial-gradient(900px 320px at 0% 0%, rgba(245, 158, 11, 0.06), transparent 55%),
-        linear-gradient(180deg, #f8fafc 0%, #f4f6fb 100%);
+        radial-gradient(1200px 380px at 50% 0px, rgba(16, 185, 129, 0.04), transparent 75%),
+        radial-gradient(800px 300px at 90% 20%, rgba(59, 130, 246, 0.03), transparent 70%),
+        #f8fafc;
     }
 
-    /* Header texture */
-    .header-glow {
-      background-image:
-        radial-gradient(600px 140px at 15% -40%, rgba(129, 140, 248, 0.35), transparent 70%),
-        radial-gradient(700px 160px at 85% -30%, rgba(245, 158, 11, 0.22), transparent 70%);
-    }
-
-    /* Slim, elegant scrollbars */
+    /* Slim, unobtrusive scrollbars */
     .no-scrollbar::-webkit-scrollbar { display: none; }
-    .thin-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .thin-scroll::-webkit-scrollbar { height: 5px; width: 5px; }
     .thin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
     .thin-scroll::-webkit-scrollbar-track { background: transparent; }
 
-    /* Card hover lift */
-    .lift { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
-    .lift:hover { transform: translateY(-2px); box-shadow: 0 10px 26px -10px rgba(15,23,42,.18); }
-
-    /* Table polish */
-    tbody tr { transition: background-color .15s ease; }
-    thead th:first-child { border-top-left-radius: .75rem; border-bottom-left-radius: .75rem; }
-    thead th:last-child { border-top-right-radius: .75rem; border-bottom-right-radius: .75rem; }
+    /* Ultra-subtle lift */
+    .lift {
+      transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease;
+    }
+    .lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+      border-color: #cbd5e1;
+    }
 
     /* Modern select styling */
-    select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .7rem center; padding-right: 2rem !important; }
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.25rem !important;
+    }
 
-    /* Loading skeleton shimmer */
+    /* Consistent focus rings */
+    input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+      border-radius: 0.75rem;
+    }
+
+    /* Loading skeleton */
     .skeleton {
-      background: linear-gradient(90deg, #eef1f6 25%, #e2e8f0 37%, #eef1f6 63%);
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
       background-size: 800px 100%;
       animation: shimmer 1.4s infinite linear;
     }
 
-    /* Focus ring consistency */
-    input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, .30);
-      border-radius: .75rem;
+    /* Modal animation */
+    @keyframes modalEnter {
+      from { opacity: 0; transform: scale(0.97) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
-
-    /* Reduced motion respect */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    .animate-modal {
+      animation: modalEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
   </style>
 </head>
 <body class="page-backdrop text-slate-900 min-h-screen flex flex-col antialiased">
 
   <!-- Header -->
-  <header class="relative bg-gradient-to-r from-indigo-950 via-indigo-900 to-violet-900 text-white shadow-lg header-glow">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
-      <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
-        <div class="p-1.5 sm:p-2 bg-white/10 ring-1 ring-white/15 rounded-xl backdrop-blur-sm shrink-0 shadow-inner">
-          <i data-lucide="layers" class="w-5 h-5 sm:w-6 sm:h-6 text-amber-300"></i>
+  <header class="bg-[#0B0F19] text-white border-b border-slate-800/80 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center space-x-3 min-w-0">
+        <div class="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl backdrop-blur-sm shrink-0 flex items-center justify-center">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
         </div>
         <div class="min-w-0">
-          <div class="flex items-center gap-1.5 sm:gap-2">
-            <h1 class="font-bold text-sm sm:text-lg leading-tight truncate">Mizoram VB-G RAM G Portal</h1>
-            <span class="bg-emerald-500/20 text-emerald-300 text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-500/30 whitespace-nowrap">10 VILLAGES</span>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-white truncate">Mizoram VB-G RAM G Portal</h1>
+            <span class="bg-emerald-500/15 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 whitespace-nowrap">10 VILLAGES</span>
           </div>
-          <p class="text-indigo-200 text-xs hidden sm:block">Thingsulthliah RD Block Official Mirror • Unrestricted Fast Access</p>
+          <p class="text-slate-400 text-xs hidden sm:block truncate">Thingsulthliah RD Block Community Mirror • Aizawl District</p>
         </div>
       </div>
-      <div class="flex items-center gap-2 text-xs bg-white/10 backdrop-blur-sm px-2.5 sm:px-3 py-1.5 rounded-full border border-white/15 shrink-0 shadow-sm" id="syncBadge">
+      
+      <div class="flex items-center gap-2 text-xs bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-full shrink-0 shadow-xs" id="syncBadge">
         <span class="relative flex h-2 w-2 shrink-0">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
         </span>
-        <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-200 animate-spin"></i>
-        <span id="lastUpdatedText" class="text-indigo-100 text-[11px] sm:text-xs font-medium">Syncing...</span>
+        <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-400 animate-spin"></i>
+        <span id="lastUpdatedText" class="text-slate-300 text-[11px] font-medium">Syncing...</span>
       </div>
     </div>
-    <div class="h-0.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 opacity-80"></div>
   </header>
 
   <!-- Single Sticky Wrapper for Village Bar + Nav Tabs (Zero-Overlap on Mobile & Desktop) -->
-  <div class="sticky top-0 z-40 shadow-soft">
-    <!-- Sticky Global Village Command Bar (Vibrant Amber/Gold - High Visibility) -->
-    <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-slate-950 border-b border-amber-600/60">
-      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3">
+  <!-- Secondary Command Bar & Navigation Dock -->
+  <div class="sticky top-[53px] z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06)]">
+    
+    <!-- Village Command Bar -->
+    <div class="border-b border-slate-100 bg-slate-50/50">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-4">
+        
+        <!-- Left: Scope Status Pill -->
         <div class="flex items-center justify-between sm:justify-start gap-2.5">
           <div class="flex items-center gap-2">
-            <div class="p-1.5 bg-white/25 backdrop-blur-sm rounded-lg shadow-inner flex items-center justify-center shrink-0 ring-1 ring-white/30">
-              <i data-lucide="map-pin" class="w-4 h-4 text-white animate-pulse"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] sm:text-[11px] font-black tracking-widest text-amber-950 uppercase">Scope:</span>
-                <span id="activeVillagePill" class="bg-white text-slate-900 text-[11px] sm:text-xs font-black px-2 py-0.5 rounded-full shadow-sm ring-1 ring-black/5">All 10 Villages</span>
-              </div>
-            </div>
+            <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Scope:</span>
+            <span id="activeVillagePill" class="bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 shadow-2xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+              <span>All 10 Villages</span>
+            </span>
           </div>
-          <p id="globalVillageSubtext" class="text-xs font-semibold text-amber-950/90 hidden lg:block">All tabs update to this selection</p>
+          <p id="globalVillageSubtext" class="text-xs text-slate-500 hidden lg:block">Data across all tabs is synced to this village selection</p>
         </div>
 
-        <!-- Pronounced Dropdown + Reset Button -->
+        <!-- Right: Village Selector Dropdown -->
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <div class="relative flex-1 sm:w-80">
+          <div class="relative flex-1 sm:w-72">
             <select id="globalVillageSelect" onchange="onGlobalVillageChange(this.value)" 
-                    class="w-full bg-white text-slate-900 font-bold text-xs sm:text-sm rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 pr-8 border border-amber-900/20 shadow-sm focus:outline-none focus:ring-4 focus:ring-amber-300/60 cursor-pointer transition">
+                    class="w-full bg-white text-slate-900 font-semibold text-xs sm:text-sm rounded-xl px-3 py-1.5 sm:py-2 border border-slate-300 shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition">
               <option value="ALL">📍 All My 10 Villages (Combined)</option>
             </select>
           </div>
           <button onclick="onGlobalVillageChange('ALL')" 
-                  class="bg-amber-950/90 hover:bg-black text-white text-xs font-bold px-3 py-2 sm:py-2.5 rounded-xl transition shadow-sm whitespace-nowrap active:scale-95 shrink-0" 
+                  class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 transition shadow-2xs whitespace-nowrap active:scale-95 shrink-0" 
                   title="Reset to view all 10 target villages">
-            All Villages
+            Reset
           </button>
         </div>
+
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <nav class="bg-white/85 backdrop-blur-md border-b border-slate-200/80">
-      <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div class="flex space-x-1.5 sm:space-x-3 overflow-x-auto py-2 sm:py-2.5 no-scrollbar scroll-smooth">
-          <button onclick="switchTab('jobcards')" id="tabBtn-jobcards" class="tab-btn px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-1.5 sm:gap-2 transition bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm ring-1 ring-indigo-700/20 shrink-0">
-            <i data-lucide="id-card" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-            <span>Active Job Cards</span>
-            <span id="jcBadgeCount" class="ml-0.5 sm:ml-1 bg-white/25 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold ring-1 ring-white/30">0</span>
-          </button>
-          <button onclick="switchTab('muster')" id="tabBtn-muster" class="tab-btn px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-1.5 sm:gap-2 transition text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/70 shrink-0">
-            <i data-lucide="clipboard-list" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-            <span>Muster Rolls (eMR)</span>
-            <span id="emrBadgeCount" class="ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold">0</span>
-          </button>
-          <button onclick="switchTab('demands')" id="tabBtn-demands" class="tab-btn px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-1.5 sm:gap-2 transition text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/70 shrink-0">
-            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-            <span>Village Demands</span>
-            <span id="demandsBadgeCount" class="ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold">0</span>
-          </button>
-          <button onclick="switchTab('works')" id="tabBtn-works" class="tab-btn px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-1.5 sm:gap-2 transition text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/70 shrink-0">
-            <i data-lucide="hammer" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-            <span>Incomplete Works</span>
-            <span id="worksBadgeCount" class="ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold">0</span>
-          </button>
-        </div>
+    <!-- Navigation Tabs Dock -->
+    <nav class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div class="flex space-x-1 sm:space-x-2 overflow-x-auto py-1.5 sm:py-2 no-scrollbar scroll-smooth">
+        <button onclick="switchTab('jobcards')" id="tabBtn-jobcards" class="tab-btn px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center gap-2 transition bg-slate-900 text-white shadow-xs shrink-0 active:scale-98">
+          <i data-lucide="id-card" class="w-4 h-4"></i>
+          <span>Active Job Cards</span>
+          <span id="jcBadgeCount" class="ml-0.5 bg-white/20 text-white text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold ring-1 ring-white/20">0</span>
+        </button>
+        <button onclick="switchTab('muster')" id="tabBtn-muster" class="tab-btn px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 shrink-0 active:scale-98">
+          <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+          <span>Muster Rolls (eMR)</span>
+          <span id="emrBadgeCount" class="ml-0.5 bg-slate-100 text-slate-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold ring-1 ring-slate-200/60">0</span>
+        </button>
+        <button onclick="switchTab('demands')" id="tabBtn-demands" class="tab-btn px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 shrink-0 active:scale-98">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+          <span>Village Demands</span>
+          <span id="demandsBadgeCount" class="ml-0.5 bg-slate-100 text-slate-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold ring-1 ring-slate-200/60">0</span>
+        </button>
+        <button onclick="switchTab('works')" id="tabBtn-works" class="tab-btn px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 shrink-0 active:scale-98">
+          <i data-lucide="hammer" class="w-4 h-4"></i>
+          <span>Incomplete Works</span>
+          <span id="worksBadgeCount" class="ml-0.5 bg-slate-100 text-slate-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold ring-1 ring-slate-200/60">0</span>
+        </button>
       </div>
     </nav>
+
   </div>
 
   <!-- Main Container -->
@@ -229,21 +247,21 @@
     <!-- TAB 1: ACTIVE JOB CARDS (PRIMARY REGISTER) -->
     <section id="tab-jobcards" class="tab-content hidden">
       <!-- In-Tab Active Village Banner -->
-      <div class="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50/70 border border-amber-200 rounded-2xl p-3.5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-soft animate-fade-up">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div class="flex items-center gap-3">
-          <div class="p-2 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl shadow-sm shrink-0 flex items-center justify-center ring-2 ring-amber-200/70">
-            <i data-lucide="map-pin" class="w-4 h-4"></i>
+          <div class="p-2 bg-slate-100 text-slate-700 rounded-xl shrink-0 flex items-center justify-center">
+            <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
           </div>
           <div>
-            <div class="text-[11px] font-bold tracking-wider uppercase text-amber-700">Filtered Village Scope</div>
-            <div class="text-sm sm:text-base font-extrabold text-amber-950 flex items-center gap-2">
+            <div class="text-[10px] font-bold tracking-wider uppercase text-slate-400">Village Scope Filter</div>
+            <div class="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-2">
               <span class="tab-active-village-name">All 10 Villages (Combined)</span>
-              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200 inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Active</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200/60 inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>
             </div>
           </div>
         </div>
-        <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-amber-50 text-amber-800 px-3.5 py-2 rounded-xl transition shadow-sm ring-1 ring-amber-300/70 active:scale-95">
-          <i data-lucide="map" class="w-4 h-4"></i>
+        <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-3.5 py-2 rounded-xl transition border border-slate-200 active:scale-95">
+          <i data-lucide="map" class="w-3.5 h-3.5 text-slate-500"></i>
           <span>Change Village</span>
         </button>
       </div>
@@ -253,7 +271,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div>
             <h2 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              <i data-lucide="id-card" class="w-5 h-5 text-indigo-600"></i>
+              <i data-lucide="id-card" class="w-5 h-5 text-emerald-700"></i>
               <span>Active Job Cards Register (Thingsulthliah Block)</span>
             </h2>
             <p class="text-slate-500 text-xs mt-0.5">
@@ -269,7 +287,7 @@
             <!-- Search Input -->
             <div class="relative w-full sm:w-72">
               <input type="text" id="jcSearchInput" placeholder="Search by Job Card No. or Name..." 
-                     class="border border-slate-200 bg-slate-50/70 hover:bg-white rounded-xl pl-9 pr-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400 transition"
+                     class="border border-slate-200 bg-slate-50/70 hover:bg-white rounded-xl pl-9 pr-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:border-transparent placeholder:text-slate-400 transition"
                      oninput="filterJobCards()">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
             </div>
@@ -326,21 +344,21 @@
     <!-- TAB 2: MUSTER ROLLS (eMR) -->
     <section id="tab-muster" class="tab-content hidden">
       <!-- In-Tab Active Village Banner -->
-      <div class="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50/70 border border-amber-200 rounded-2xl p-3.5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-soft animate-fade-up">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div class="flex items-center gap-3">
-          <div class="p-2 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl shadow-sm shrink-0 flex items-center justify-center ring-2 ring-amber-200/70">
-            <i data-lucide="map-pin" class="w-4 h-4"></i>
+          <div class="p-2 bg-slate-100 text-slate-700 rounded-xl shrink-0 flex items-center justify-center">
+            <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
           </div>
           <div>
-            <div class="text-[11px] font-bold tracking-wider uppercase text-amber-700">Filtered Village Scope</div>
-            <div class="text-sm sm:text-base font-extrabold text-amber-950 flex items-center gap-2">
+            <div class="text-[10px] font-bold tracking-wider uppercase text-slate-400">Village Scope Filter</div>
+            <div class="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-2">
               <span class="tab-active-village-name">All 10 Villages (Combined)</span>
-              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200 inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Active</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200/60 inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>
             </div>
           </div>
         </div>
-        <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-amber-50 text-amber-800 px-3.5 py-2 rounded-xl transition shadow-sm ring-1 ring-amber-300/70 active:scale-95">
-          <i data-lucide="map" class="w-4 h-4"></i>
+        <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-3.5 py-2 rounded-xl transition border border-slate-200 active:scale-95">
+          <i data-lucide="map" class="w-3.5 h-3.5 text-slate-500"></i>
           <span>Change Village</span>
         </button>
       </div>
@@ -350,7 +368,7 @@
           <div>
             <div class="flex items-center gap-2">
               <h2 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-                <i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-600"></i>
+                <i data-lucide="clipboard-list" class="w-5 h-5 text-emerald-700"></i>
                 <span>Muster Rolls Directory (eMR)</span>
               </h2>
               <span id="emrTotalCountPill" class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-0.5 rounded-full">1,586 Slips</span>
@@ -363,7 +381,7 @@
             <!-- View Mode Switcher -->
             <div class="bg-slate-100 p-1 rounded-xl flex items-center text-xs font-semibold shrink-0 border border-slate-200">
               <button id="emrViewModeCompact" onclick="setEmrViewMode('compact')" 
-                      class="px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm ring-1 ring-indigo-100 flex items-center gap-1.5 transition font-semibold">
+                      class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-2xs ring-1 ring-slate-200 flex items-center gap-1.5 transition font-bold">
                 <i data-lucide="layers" class="w-3.5 h-3.5"></i>
                 <span>Compact (By Month & Work)</span>
               </button>
@@ -377,7 +395,7 @@
             <!-- Search Input -->
             <div class="relative w-full sm:w-64">
               <input type="text" id="emrSearchInput" placeholder="Search work, eMR No, or GP..." 
-                     class="border border-slate-200 bg-slate-50/70 hover:bg-white rounded-xl pl-9 pr-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400 transition"
+                     class="border border-slate-200 bg-slate-50/70 hover:bg-white rounded-xl pl-9 pr-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:border-transparent placeholder:text-slate-400 transition"
                      oninput="onEmrSearchInput()">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
             </div>
@@ -460,7 +478,7 @@
 
         <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button onclick="openSupabaseModal()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl transition shadow-sm ring-1 ring-slate-300 active:scale-95">
-            <i data-lucide="database" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-700"></i>
             <span>Supabase Cloud Sync</span>
           </button>
           <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-xl transition shadow-sm active:scale-95">
@@ -485,7 +503,7 @@
         <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
           <div class="text-[11px] text-indigo-700 font-semibold uppercase tracking-wide">Reporting Villages</div>
           <div class="text-2xl font-extrabold text-indigo-700 mt-1" id="kpiDemandsVillagesCount">0 / 10</div>
-          <div class="text-[11px] text-indigo-600/80 mt-0.5">Have submitted lists</div>
+          <div class="text-[11px] text-emerald-700/80 mt-0.5">Have submitted lists</div>
         </div>
         <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
           <div class="text-[11px] text-amber-700 font-semibold uppercase tracking-wide">Storage Backend</div>
@@ -643,21 +661,21 @@
     <!-- TAB 3: INCOMPLETE WORKS -->
     <section id="tab-works" class="tab-content hidden">
       <!-- In-Tab Active Village Banner -->
-      <div class="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50/70 border border-amber-200 rounded-2xl p-3.5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-soft animate-fade-up">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div class="flex items-center gap-3">
-          <div class="p-2 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl shadow-sm shrink-0 flex items-center justify-center ring-2 ring-amber-200/70">
-            <i data-lucide="map-pin" class="w-4 h-4"></i>
+          <div class="p-2 bg-slate-100 text-slate-700 rounded-xl shrink-0 flex items-center justify-center">
+            <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
           </div>
           <div>
-            <div class="text-[11px] font-bold tracking-wider uppercase text-amber-700">Filtered Village Scope</div>
-            <div class="text-sm sm:text-base font-extrabold text-amber-950 flex items-center gap-2">
+            <div class="text-[10px] font-bold tracking-wider uppercase text-slate-400">Village Scope Filter</div>
+            <div class="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-2">
               <span class="tab-active-village-name">All 10 Villages (Combined)</span>
-              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200 inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Active</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200/60 inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>
             </div>
           </div>
         </div>
-        <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-amber-50 text-amber-800 px-3.5 py-2 rounded-xl transition shadow-sm ring-1 ring-amber-300/70 active:scale-95">
-          <i data-lucide="map" class="w-4 h-4"></i>
+        <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 px-3.5 py-2 rounded-xl transition border border-slate-200 active:scale-95">
+          <i data-lucide="map" class="w-3.5 h-3.5 text-slate-500"></i>
           <span>Change Village</span>
         </button>
       </div>
@@ -675,9 +693,9 @@
           </div>
         </div>
         <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-emerald-100/70"></div>
+          
           <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm shrink-0"><i data-lucide="check-circle-2" class="w-4 h-4"></i></div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 shrink-0 border border-emerald-200/60"><i data-lucide="check-circle-2" class="w-4 h-4"></i></div>
             <div>
               <div class="text-[11px] text-emerald-600 font-semibold uppercase tracking-wide">Completed Works</div>
               <div class="text-2xl font-extrabold text-emerald-700" id="kpiCompleted">0</div>
@@ -685,9 +703,9 @@
           </div>
         </div>
         <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-amber-100/70"></div>
+          
           <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm shrink-0"><i data-lucide="clock" class="w-4 h-4"></i></div>
+            <div class="p-2.5 rounded-xl bg-amber-50 text-amber-700 shrink-0 border border-amber-200/60"><i data-lucide="clock" class="w-4 h-4"></i></div>
             <div>
               <div class="text-[11px] text-amber-600 font-semibold uppercase tracking-wide">Not Yet Completed</div>
               <div class="text-2xl font-extrabold text-amber-700" id="kpiIncomplete">0</div>
@@ -695,11 +713,11 @@
           </div>
         </div>
         <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-indigo-100/70"></div>
+          
           <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm shrink-0"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
+            <div class="p-2.5 rounded-xl bg-slate-100 text-slate-800 shrink-0 border border-slate-200"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
             <div>
-              <div class="text-[11px] text-indigo-600 font-semibold uppercase tracking-wide">District Completion Rate</div>
+              <div class="text-[11px] text-emerald-700 font-semibold uppercase tracking-wide">District Completion Rate</div>
               <div class="text-2xl font-extrabold text-indigo-700" id="kpiRate">0%</div>
             </div>
           </div>
@@ -708,7 +726,7 @@
 
       <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-5">
         <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-          <i data-lucide="hammer" class="w-5 h-5 text-indigo-600"></i>
+          <i data-lucide="hammer" class="w-5 h-5 text-emerald-700"></i>
           <span>Panchayat Works Breakdown</span>
         </h2>
         <div class="overflow-x-auto">
@@ -757,19 +775,18 @@
   <div id="passbookModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
     <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-slate-200 animate-fade-up">
       
-      <!-- Modal Header -->
-      <div class="relative bg-gradient-to-br from-indigo-950 via-indigo-900 to-violet-900 text-white p-4 sm:p-5 flex items-start justify-between gap-3 overflow-hidden">
-        <div class="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-amber-400/15 blur-2xl pointer-events-none"></div>
+      <!-- Modal Header: Obsidian & Emerald -->
+      <div class="bg-[#0B0F19] text-white p-4 sm:p-5 flex items-start justify-between gap-3 border-b border-slate-800">
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <span class="text-[11px] bg-emerald-500 text-white font-bold px-2 py-0.5 rounded uppercase tracking-wider" id="modalPanchayat">Panchayat</span>
-            <span class="text-indigo-200 text-xs truncate" id="modalBlock">Block</span>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-emerald-500/30" id="modalPanchayat">Panchayat</span>
+            <span class="text-slate-400 text-xs truncate" id="modalBlock">Thingsulthliah RD Block</span>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold mt-1 text-white truncate" id="modalWorkerName">Worker Name</h3>
-          <p class="text-indigo-200 text-xs font-mono mt-0.5 truncate" id="modalJobCardNo">Job Card No.</p>
+          <h3 class="text-lg sm:text-xl font-extrabold mt-1 text-white truncate tracking-tight" id="modalWorkerName">Worker Name</h3>
+          <p class="text-slate-400 text-xs font-mono mt-0.5 truncate" id="modalJobCardNo">Job Card No.</p>
         </div>
-        <button onclick="closePassbookModal()" class="text-indigo-200 hover:text-white p-1.5 rounded-lg bg-indigo-950/40 hover:bg-indigo-950/70 transition shrink-0 active:scale-95" title="Close Passbook">
-          <i data-lucide="x" class="w-6 h-6"></i>
+        <button onclick="closePassbookModal()" class="text-slate-400 hover:text-white p-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition shrink-0 active:scale-95" title="Close Passbook">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
@@ -807,7 +824,7 @@
         <span class="font-semibold text-slate-600">Thingsulthliah Block Community Mirror (Aizawl District)</span>
       </div>
       <p>Data mirrored from
-        <a href="https://vbgramgrep.dord.gov.in" target="_blank" class="inline-flex items-center gap-1 text-indigo-600 font-semibold hover:text-indigo-800 hover:underline underline-offset-2 transition">
+        <a href="https://vbgramgrep.dord.gov.in" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 font-semibold hover:text-indigo-800 hover:underline underline-offset-2 transition">
           dord.gov.in (MoRD) <i data-lucide="external-link" class="w-3 h-3"></i>
         </a>
       </p>
@@ -956,11 +973,10 @@
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-gradient-to-r', 'from-indigo-600', 'to-violet-600', 'text-white', 'shadow-sm', 'ring-1', 'ring-indigo-700/20');
-        btn.classList.add('text-slate-600', 'hover:text-indigo-700', 'hover:bg-indigo-50/70');
-        // reset count badge to neutral
+        btn.classList.remove('bg-slate-900', 'text-white', 'shadow-xs', 'font-bold');
+        btn.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-100/80', 'font-semibold');
         const b = btn.querySelector('span:last-child');
-        if (b) b.className = 'ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold';
+        if (b) b.className = 'ml-0.5 bg-slate-100 text-slate-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold ring-1 ring-slate-200/60';
       });
 
       const activeSection = document.getElementById('tab-' + tabId);
@@ -968,10 +984,10 @@
 
       const activeBtn = document.getElementById('tabBtn-' + tabId);
       if (activeBtn) {
-        activeBtn.classList.remove('text-slate-600', 'hover:text-indigo-700', 'hover:bg-indigo-50/70');
-        activeBtn.classList.add('bg-gradient-to-r', 'from-indigo-600', 'to-violet-600', 'text-white', 'shadow-sm', 'ring-1', 'ring-indigo-700/20');
+        activeBtn.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-100/80', 'font-semibold');
+        activeBtn.classList.add('bg-slate-900', 'text-white', 'shadow-xs', 'font-bold');
         const ab = activeBtn.querySelector('span:last-child');
-        if (ab) ab.className = 'ml-0.5 sm:ml-1 bg-white/25 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold ring-1 ring-white/30';
+        if (ab) ab.className = 'ml-0.5 bg-white/20 text-white text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold ring-1 ring-white/20';
       }
       lucide.createIcons();
     }
@@ -1148,7 +1164,7 @@
             </td>
             <td class="py-2.5 px-3 text-right space-x-2">
               <button onclick="launchWorkerPassbook('${j.job_card_no}', '${cleanName}', '${cleanPanchayat}', '${cleanBlock}')" 
-                      class="inline-flex items-center gap-1.5 text-xs bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-3 py-1.5 rounded-lg shadow-sm font-semibold transition active:scale-95">
+                      class="inline-flex items-center gap-1.5 text-xs bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl shadow-2xs font-semibold transition active:scale-95">
                 <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
                 <span>View Passbook</span>
               </button>
@@ -1183,7 +1199,7 @@
 
             <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
               <button onclick="launchWorkerPassbook('${j.job_card_no}', '${cleanName}', '${cleanPanchayat}', '${cleanBlock}')" 
-                      class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-2 rounded-lg font-bold shadow-sm active:scale-95 transition">
+                      class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-xl font-semibold shadow-2xs active:scale-95 transition">
                 <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
                 <span>View Passbook</span>
               </button>
@@ -1298,7 +1314,7 @@
               <div>
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="text-[11px] font-bold uppercase tracking-wide bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
-                    <i data-lucide="calendar" class="w-3 h-3 text-indigo-600"></i>
+                    <i data-lucide="calendar" class="w-3 h-3 text-emerald-700"></i>
                     <span>${p.work_month || 'Payment Batch'}</span>
                   </span>
                   ${p.wl_matched ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1"><span>✓ Verified Work Attendance</span></span>` : ''}
@@ -1309,10 +1325,10 @@
                 ${p.work_code ? `<div class="font-mono text-[11px] text-slate-400 mt-0.5">Code: ${p.work_code}</div>` : ''}
 
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600 mt-2">
-                  ${p.work_period ? `<span class="inline-flex items-center gap-1 font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md"><i data-lucide="clock" class="w-3 h-3 text-indigo-600"></i><span>Work: <b>${formatDDMMYYYY(p.work_period)}</b></span></span>` : ''}
+                  ${p.work_period ? `<span class="inline-flex items-center gap-1 font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md"><i data-lucide="clock" class="w-3 h-3 text-emerald-700"></i><span>Work: <b>${formatDDMMYYYY(p.work_period)}</b></span></span>` : ''}
                   ${p.payment_date || p.transaction_date ? `<span class="inline-flex items-center gap-1 text-slate-500"><i data-lucide="receipt" class="w-3 h-3 text-slate-400"></i><span>Disbursed: <b>${formatDDMMYYYY(p.payment_date || p.transaction_date)}</b></span></span>` : ''}
                   ${p.emr_link ? `
-                    <a href="${p.emr_link}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline">
+                    <a href="${p.emr_link}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-indigo-800 hover:underline">
                       <i data-lucide="file-text" class="w-3 h-3"></i>
                       <span>eMR ${p.muster_roll_no || 'Slip'} ↗</span>
                     </a>
@@ -1346,7 +1362,7 @@
 
             ${ftoUrl ? `
               <div class="text-right pt-1">
-                <a href="${ftoUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                <a href="${ftoUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs text-emerald-700 hover:text-indigo-800 font-medium hover:underline">
                   <span>View Official FTO Signatory Receipt</span>
                   <i data-lucide="external-link" class="w-3 h-3"></i>
                 </a>
@@ -1565,10 +1581,10 @@
         monthSection.innerHTML = `
           <!-- Collapsible Month Header -->
           <div onclick="toggleMonthCollapse('${monthCardId}', '${iconId}')" 
-               class="bg-gradient-to-r from-indigo-50/70 via-slate-50 to-emerald-50/40 hover:from-indigo-100/70 hover:to-emerald-100/50 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer select-none transition border-b border-slate-200">
+               class="bg-slate-50/90 hover:bg-slate-100/80 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer select-none transition border-b border-slate-200">
             <div class="flex items-center justify-between sm:justify-start gap-2.5">
               <div class="flex items-center gap-2.5">
-                <div class="p-1.5 sm:p-2 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-xl shadow-sm shrink-0">
+                <div class="p-1.5 sm:p-2 bg-slate-900 text-white rounded-xl shadow-2xs shrink-0">
                   <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </div>
                 <div>
@@ -1623,7 +1639,7 @@
                     <div class="mt-3.5 pt-3 border-t border-slate-200">
                       <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
                         <span>Clickable Muster Roll Slips:</span>
-                        <span class="text-[10px] text-indigo-600 font-normal">Opens Signed Govt Document ↗</span>
+                        <span class="text-[10px] text-emerald-700 font-normal">Opens Signed Govt Document ↗</span>
                       </div>
                       <div class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
                         ${w.slips.map(s => {
@@ -1786,7 +1802,7 @@
           <td class="py-2.5 px-3 text-slate-600">${w.completion_rate}%</td>
           <td class="py-2.5 px-3 text-right">
             ${w.details_link ? `
-              <a href="${w.details_link}" target="_blank" class="inline-flex items-center gap-1 text-xs text-indigo-600 font-semibold hover:underline bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition">
+              <a href="${w.details_link}" target="_blank" class="inline-flex items-center gap-1 text-xs text-emerald-700 font-semibold hover:underline bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition">
                 <span>Official Report</span>
                 <i data-lucide="external-link" class="w-3 h-3"></i>
               </a>
@@ -2425,8 +2441,8 @@
 
       <div class="space-y-4">
         <div class="bg-indigo-50/70 border border-indigo-200/70 rounded-2xl p-3.5 text-xs text-indigo-900 space-y-1">
-          <div class="font-bold flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-indigo-600"></i> How Supabase Free works:</div>
-          <p class="text-slate-600">You can create a free project at <a href="https://supabase.com" target="_blank" class="text-indigo-600 font-bold underline">supabase.com</a>. Once you paste your Project URL and Public Anon Key below, all Excel uploads will be stored permanently in your cloud bucket.</p>
+          <div class="font-bold flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-emerald-700"></i> How Supabase Free works:</div>
+          <p class="text-slate-600">You can create a free project at <a href="https://supabase.com" target="_blank" class="text-emerald-700 font-bold underline">supabase.com</a>. Once you paste your Project URL and Public Anon Key below, all Excel uploads will be stored permanently in your cloud bucket.</p>
         </div>
 
         <div>
