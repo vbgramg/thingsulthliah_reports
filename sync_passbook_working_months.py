@@ -67,7 +67,7 @@ def parse_emr_sheet(m):
                 emr_info = {
                     "muster_roll_no": m.get('muster_roll_no', ''),
                     "gp": m.get('gp', ''),
-                    "block": m.get('block', 'PHULLEN'),
+                    "block": m.get('block', 'THINGSULTHLIAH'),
                     "work_name": m.get('work_name', ''),
                     "work_code": m.get('work_code', ''),
                     "date_from": d_from,

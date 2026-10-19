@@ -23,10 +23,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # The 19 specific user-requested villages/Panchayats
 TARGET_VILLAGES_CONFIG = [
-    "buhban", "dilkhan", "keifang leitan", "keifang venghlun", "keifang venglai",
-    "khanpui", "lailak", "lenchim", "lungpher", "maite", "mualpheng", "ruallung",
-    "rulchawm", "saitual 1", "saitual i", "saitual-i", "saitual venglai",
-    "saitual 3", "saitual iii", "saitual-iii", "sihfa", "tawizo", "tualbung"
+    "phulmawi", "tlungvel", "darlawng",
+    "thingsulthliah - i", "thingsulthliah i", "thingsulthliah 1", "thingsulthliah-i",
+    "thingsulthliah ii", "thingsulthliah 2", "thingsulthliah-ii",
+    "tlangnuam", "thingsul tlangnuam", "thingsul-tlangnuam",
+    "seling",
+    "sesawng i", "sesawng 1", "sesawng-i",
+    "sesawng ii", "sesawng 2", "sesawng-ii",
+    "sesawng iii", "sesawng 3", "sesawng-iii"
 ]
 
 def normalize_village(name):
@@ -35,14 +39,17 @@ def normalize_village(name):
         return ""
     s = name.lower().replace('-', ' ').replace('_', ' ')
     s = re.sub(r'\(.*?\)', '', s)
-    s = s.replace('saitual 1', 'saitual i').replace('saitual-i', 'saitual i')
-    s = s.replace('saitual 3', 'saitual iii').replace('saitual-iii', 'saitual iii')
+    s = s.replace('thingsulthliah 1', 'thingsulthliah i').replace('thingsulthliah-i', 'thingsulthliah i')
+    s = s.replace('thingsulthliah 2', 'thingsulthliah ii').replace('thingsulthliah-ii', 'thingsulthliah ii')
+    s = s.replace('sesawng 1', 'sesawng i').replace('sesawng-i', 'sesawng i')
+    s = s.replace('sesawng 2', 'sesawng ii').replace('sesawng-ii', 'sesawng ii')
+    s = s.replace('sesawng 3', 'sesawng iii').replace('sesawng-iii', 'sesawng iii')
     return ' '.join(s.split())
 
 TARGET_NORM_SET = {normalize_village(v) for v in TARGET_VILLAGES_CONFIG}
 
 def is_target_village(gp_name):
-    """Check if a given GP/Village is in the user's 19 target villages."""
+    """Check if a given GP/Village is in the user's 10 target villages."""
     return normalize_village(gp_name) in TARGET_NORM_SET
 
 HEADERS = {
@@ -73,12 +80,11 @@ def fetch_html(url, referer=None, timeout=25):
 
 def scrape_job_cards(block_urls=None):
     """Module 1: Scrape Active Job Cards for the 19 user-selected villages (filter out deleted '*')."""
-    print("[1/5] Scraping Active Job Cards for target 19 villages...")
+    print("[1/5] Scraping Active Job Cards for target 10 villages...")
     
     if not block_urls:
         block_urls = [
-            ('PHULLEN', 'https://vbgramgrep.dord.gov.in/VBGRAMG/app_issue.aspx?payload=nmCfgIx2iAkxnPzyoAyDi2wSNZsOvJEG9aFPF3oZXGnNLT4hUDeGH5WyQS1JSOGFjeJhPCjVIhJygs7O9T-TiQYyWd1Nrc4vwEuMABZCdVlJIJFNNOAGxbSqt5SS9eEforbioSEvsdyA6j0sFSqwCzB8mcjFmBJW158JLMdxiqdAb8U68QnUD42SJfcknbi02cNn78kfNExlYci6GPOGZJXu_-4RoQ2ilgJxQ0SEUzS7NXiUDP1q6haOMmeort6ZQqBFSAS4DFGdJmdMtv3NbA'),
-            ('NGOPA', 'https://vbgramgrep.dord.gov.in/VBGRAMG/app_issue.aspx?payload=WmMWKpVMlUFrXNXUmOOGPqGRryz1_P36I90lHAJAAHjyXMQSOFsiFczNAxc3mAGzE1WM22WpUrvpET9h3v35rnb-XOj8fC7IDz5N0vZGm0Qx4xzJbHApu64QtHivr7iFTMZF9yMQtLJnLoahz5ARUDZubOE9UITYNWpdfKzfQwGxVvCZxmUWAKtT7rx5QRYE8XYvIu1sFA9zbIWyoBVdnHhB8sXelHHFgqXQNSy6EFubyhsxSwwVYcVJDn73Mnzrn_IiCppohte3LeNDrx_BpQ')
+            ('THINGSULTHLIAH', 'https://vbgramgrep.dord.gov.in/VBGRAMG/app_issue.aspx?payload=fI4dEjG_1mWWPFiVn21f1oAhG9ZcxuWx0hkxnlWX7MrdOydOdBeyJvjMjJwO5-6VVOYEXNYchzRauB0sdW5sy9ULPgmRwztAhGbuvw3j8wjtaxXJZtYtUilBVoyFXNGB040b0Xisw1BcGDdmOOLJRuGfA2wY7A1x3Z3xCj54Upn-dVpoK9tu2X_PSaD7jWtj0RMIVRykNXL_K2VsJCktjMR9lTR9-1vULK8Lxu4gTfUU_ncDl8Nirdnhok3BytTTpOOqnSD_2B0v8V5ri1Hojdqzx8yFxgh_LACNdU8RfMQ')
         ]
         
     gp_list = []
@@ -143,7 +149,7 @@ def scrape_job_cards(block_urls=None):
 def scrape_financial_and_works(url_financial):
     """
     Module 4 & 2: Scrape official Gram Panchayat Financial Summaries,
-    Master Works, and Muster Roll disbursements for all 19 villages.
+    Master Works, and Muster Roll disbursements for all 10 villages.
     """
     print("[2/5] Scraping Financial Statements & Master Works across target villages...")
     html = fetch_html(url_financial)
@@ -238,8 +244,8 @@ def scrape_financial_and_works(url_financial):
                     current_work["emr_links"].append(emr_obj)
                     emrs.append({
                         "muster_roll_no": ms_no,
-                        "district": "SAITUAL",
-                        "block": "PHULLEN",
+                        "district": "AIZAWL",
+                        "block": "THINGSULTHLIAH",
                         "gp": p_name,
                         "agency": "Gram Panchayat",
                         "link": link,
@@ -261,7 +267,7 @@ def scrape_financial_and_works(url_financial):
             all_works.extend(w_list)
             all_emrs.extend(e_list)
             
-    print(f"      -> Successfully extracted {len(all_works)} Master Works and {len(all_emrs)} Muster Rolls across all 19 villages.")
+    print(f"      -> Successfully extracted {len(all_works)} Master Works and {len(all_emrs)} Muster Rolls across all 10 villages.")
     return {
         "summaries": gp_summaries,
         "works": all_works,
@@ -466,7 +472,7 @@ def scrape_incomplete_works(url):
 def scrape_fto_data(url, valid_jc_set=None):
     """
     Module 5: Scrape ALL 183 FTO batches, extract ABPS Account Holder Name,
-    and index full payment passbook for workers across all 19 target villages.
+    and index full payment passbook for workers across all 10 target villages.
     """
     print("[4/5] Scraping FTO Payment Records across all 183 batches...")
     html = fetch_html(url)
@@ -674,15 +680,15 @@ def run_pipeline():
     """Main pipeline executing all modules and saving to data/latest.json."""
     start_time = time.time()
     print("="*60)
-    print("  SAITUAL DISTRICT VB-G RAM G DATA AGGREGATION")
+    print("  THINGSULTHLIAH RD BLOCK VB-G RAM G DATA AGGREGATION")
     print(f"  Execution Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60)
     
-    URL_FINANCIAL = "https://vbgramgrep.dord.gov.in/VBGRAMG/citizen_html/funddisreport.aspx?payload=ZSZBwCh2w5sSjn7GRJCNVGUXWXL9isRxIGZwUQrB-28NViAXcKaRWyQyS-1cH59w59DJwjHhtQRr3iQnuGK8J72s3C-UQ_Z2c1DQAtuM39e_dhJC1jxh7hp1S2STIpfY6UCOSRK7iQs7bx_umIufKiyBULl9NSWKnIcHKWK13nJtuOQ4gVlpCO8C_vWGi-tnVHN8JbFHMfGDODXTiJpHYkHj11xxWcmgM23mD8LdZMo"
-    URL_INCOMPLETE = "https://vbgramgrep.dord.gov.in/VBGRAMG/takenup_compwrk.aspx?payload=HrhTOXOkRWSvWkPOZ_FD-zDusggY8KaZ-YfHGly4gbZ4ach36_KPAGrRi_5GDjD_uq577H-xES5jbGiaHH8sJkB3fnjZfPxpsVvCUjQkjgwReKe0xCK4dCnrGunQ58JHdhCM8AKBOTCHW_TlgnVAefyRuYP_MoXPJNWxmOHBSOIJ4zAA1U3K-DwcnJc9UJIScCKSu5a7Nlgr-Wf__4gk6eEdpJb9yr4KGfhuvvWxuYuiNEhZPYFfOyLPFfJsm4TKquNKVoLW-gMa8e51gDiPGdkyNkg8Lo85n_p80_P90dE"
-    URL_FTO = "https://vbgramgrep.dord.gov.in/VBGRAMG/FTO/fto_sign_detail.aspx?payload=-XpNbKKbc0SRHHbZyGlHi-T05r8VoBBgxmxgldBxgj11NWY0HK8J55IFv4eiqv-J99zeqoLM8CEm9EQlbLIMrLs0hVJ5uDNUe0Rm73q8gS9NYowrh72DcOx0C573pqP1CGg6srmqscTu5RyFEreRiVutiJNh-VHrlwa9Nh1XWhaPKrsKVJBoc-wj0IqF4RhAy5dZBnxnwvqx2CohEJgfpn6e-Nm4BQ523Kqw_9ECRfL1c4fkJnH57igAmG_Sw4MNxL4T-asIqUAXVgsNbiM25i3eEjQ6koykK0sVD2sXgRNz-N-UH07FjXcslifY4cRs"
+    URL_FINANCIAL = "https://vbgramgrep.dord.gov.in/VBGRAMG/citizen_html/funddisreport.aspx?payload=sg2yfjnF8VAQ2q5I7c2WaZWlLv5O14V_3Wo7_Iwq_Q8U1oJ0cLGKQqdc7Z01ElaL67iq0ABeG5-e-m8uGJKwJKnPeHvONhS7jvc6whDnquzxuYehRbnNKY4WU0vSEGRnugwlpb1n8I54fTx5OWs2P3MGIKHpGr5XWbbNfOIWSOA2Jl1uBEcy0AaUBly2sfqOqnjznPssQXHeNG263ysajjvRkIhVov0_tMcvNljeAUQ6X9KRIjh8Jt9v0UJ2s8Re"
+    URL_INCOMPLETE = "https://vbgramgrep.dord.gov.in/VBGRAMG/takenup_compwrk.aspx?payload=G-UVLT1FagC8uTppD76rp3KLX3mBlBqVP4HqiCyIQ0PFnmqJLY4Arwf3Qi9AgPROExjireuM25o_uFzkeuUJPjlo367hlq8C0Nc0N6biZCUAHa5IXZFpAFmb0ttsQH_q_MPWtsjIU1FI9gYrErY4hMCV9B6nEGB14_QhK4404D7XptiefoCCR3fdovgR2__c3ZJwt16mI2N5G0A6qvMVBDW8VzbiR3rfIAzL4lxb2PxMDUEexADihqd8JjTh-2FLxOEBiSiQFEmztNmUtGUE_PeEm7uxF8qN8WjJbIPc1OA"
+    URL_FTO = "https://vbgramgrep.dord.gov.in/VBGRAMG/FTO/fto_sign_detail.aspx?payload=S8PVx6KrcN2L5Sq7rfaKNG6IPaqZw0xKnH3rh0rZgwMMeThsr7eUZsNaHSOaEQn4hziUB86UyVLoSzs05ltekaM_T0kPqfLBQRRbFjaqeKcNam979FahxdEU153y3vKeSr6AUxK8rKtC0LESBe9OGcYaMPgcbPf3rCZtw8PiyYFJlYm-Q_HcJ_R2Cvn2vznkzKePxWJQS5J1I21GlZt8LJvGi7z0CSu-8VBmNlint_RHrsXyTolThpnMFZJ_1NXX82mwUU3rvvoII3YxwXWYlQyY71uO5Y7AIOyIGWCT-JLlAXfyH_uoOuvyV1-9qCBi"
     
-    # Step 1: Active Job Cards across the 19 target Panchayats
+    # Step 1: Active Job Cards across the 10 target Panchayats
     active_jcs = scrape_job_cards()
     valid_jc_set = {j['job_card_no'] for j in active_jcs}
     
@@ -705,7 +711,7 @@ def run_pipeline():
         "metadata": {
             "title": "Mizoram VB-G RAM G Analytics Dashboard",
             "state": "MIZORAM",
-            "district": "SAITUAL",
+            "district": "AIZAWL",
             "last_updated": datetime.now().isoformat(),
             "financial_year": "2026-2027",
             "stats": {
