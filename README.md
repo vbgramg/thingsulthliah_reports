@@ -62,7 +62,7 @@ To test the application locally:
 
 ## Deployment & Automation (GitHub Actions + GitHub Pages)
 
-1. Push this repository to GitHub: `https://github.com/josephrltpa/thingsulthliah_reports`.
+1. Push this repository to GitHub: `https://github.com/vbgramg/thingsulthliah_reports`.
 2. In GitHub repository **Settings** $\rightarrow$ **Actions** $\rightarrow$ **General** $\rightarrow$ **Workflow permissions**, select **"Read and write permissions"** and Save.
 3. In GitHub repository **Settings** $\rightarrow$ **Pages**, set **Source** to `Deploy from a branch`, choose branch `main` and folder `/ (root)`.
 4. The workflow in `.github/workflows/daily-sync.yml` automatically triggers twice daily (00:25 and 12:25 UTC) to update all records.
