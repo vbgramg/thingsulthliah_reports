@@ -11,12 +11,12 @@ The application and scraper are focused on the following 10 villages/Panchayats 
 
 ---
 
-## Features
+## Tabs & Features
 
 1. **Global Village Selector Bar (Controls All Tabs)**
-   - Located at the top of the application.
+   - Located prominently at the top in a light pink pill against the regal purple header.
    - Switch between **"All My 10 Villages (Combined)"** or any single village.
-   - All tabs (Job Cards, Muster Rolls, Incomplete Works, Financials) dynamically filter and recalculate their KPIs and counters based on the selected village.
+   - All tabs dynamically filter and recalculate their counters and tables based on the selected village.
 
 2. **Active Job Cards Register**
    - Automatically filters out all deleted job cards marked with an asterisk (`*`).
@@ -32,11 +32,14 @@ The application and scraper are focused on the following 10 villages/Panchayats 
 4. **Muster Rolls (eMR)**
    - Searchable directory of official eMR slips with exact **Work Description**, **Work Code**, and **Labor Period** (`Date From` to `Date To` + `Month`).
 
-5. **Incomplete Works Tracker**
-   - Tracks works started vs. completed vs. incomplete across the 10 Panchayats with progress KPIs and official drill-down links.
+5. **Village Demands Submission (Tab 3)**
+   - Allows users to upload monthly Excel demand sheets (`.xlsx`, `.xls`, `.csv`) per village (e.g., November 2026).
+   - Powered by **Supabase Free** cloud storage with an automatic browser IndexedDB fallback for offline/demo use.
+   - Instant file viewing, metadata tracking, monthly filtering, and 1-click download.
+   - Sample file included: `Thingsulthliah_Demands_November_2026_Sample.xlsx`.
 
-6. **Financial Master Work Statements**
-   - Overview of work sanction budgets, wage disbursements, and material expenditure with direct eMR references.
+6. **Incomplete Works Tracker**
+   - Tracks works started vs. completed vs. incomplete across the 10 Panchayats with progress KPIs and official drill-down links.
 
 ---
 
@@ -45,7 +48,7 @@ The application and scraper are focused on the following 10 villages/Panchayats 
 To test the application locally:
 1. Open terminal in this folder:
    ```bash
-   pip install beautifulsoup4
+   pip install beautifulsoup4 openpyxl
    python scraper.py
    python sync_passbook_working_months.py
    ```
@@ -59,7 +62,7 @@ To test the application locally:
 
 ## Deployment & Automation (GitHub Actions + GitHub Pages)
 
-1. Push this repository to GitHub.
+1. Push this repository to GitHub: `https://github.com/josephrltpa/thingsulthliah_reports`.
 2. In GitHub repository **Settings** $\rightarrow$ **Actions** $\rightarrow$ **General** $\rightarrow$ **Workflow permissions**, select **"Read and write permissions"** and Save.
 3. In GitHub repository **Settings** $\rightarrow$ **Pages**, set **Source** to `Deploy from a branch`, choose branch `main` and folder `/ (root)`.
 4. The workflow in `.github/workflows/daily-sync.yml` automatically triggers twice daily (00:25 and 12:25 UTC) to update all records.
