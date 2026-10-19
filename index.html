@@ -35,6 +35,7 @@
       },
     };
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -175,15 +176,15 @@
             <span>Muster Rolls (eMR)</span>
             <span id="emrBadgeCount" class="ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold">0</span>
           </button>
+          <button onclick="switchTab('demands')" id="tabBtn-demands" class="tab-btn px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-1.5 sm:gap-2 transition text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/70 shrink-0">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+            <span>Village Demands</span>
+            <span id="demandsBadgeCount" class="ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold">0</span>
+          </button>
           <button onclick="switchTab('works')" id="tabBtn-works" class="tab-btn px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-1.5 sm:gap-2 transition text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/70 shrink-0">
             <i data-lucide="hammer" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
             <span>Incomplete Works</span>
             <span id="worksBadgeCount" class="ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold">0</span>
-          </button>
-          <button onclick="switchTab('financial')" id="tabBtn-financial" class="tab-btn px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl flex items-center gap-1.5 sm:gap-2 transition text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/70 shrink-0">
-            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-            <span>Financials</span>
-            <span id="finBadgeCount" class="ml-0.5 sm:ml-1 bg-slate-200 text-slate-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-bold">0</span>
           </button>
         </div>
       </div>
@@ -437,6 +438,208 @@
       </div>
     </section>
 
+        <!-- TAB 3: VILLAGE DEMAND SUBMISSION & MANAGEMENT (Positioned between eMR and Incomplete Works) -->
+    <section id="tab-demands" class="tab-content hidden space-y-6">
+      
+      <!-- Top Banner / Village Scope + Cloud Storage Status -->
+      <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50/70 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-soft animate-fade-up">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-xl shadow-sm shrink-0 flex items-center justify-center ring-2 ring-emerald-200/70">
+            <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold tracking-wider uppercase text-emerald-800">Village Work Demand Submissions</div>
+            <div class="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <span class="tab-active-village-name">All 10 Villages (Combined)</span>
+              <span id="storageModeBadge" class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full ring-1 ring-amber-200 inline-flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Demo Mode (Browser Storage)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button onclick="openSupabaseModal()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl transition shadow-sm ring-1 ring-slate-300 active:scale-95">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span>Supabase Cloud Sync</span>
+          </button>
+          <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-xl transition shadow-sm active:scale-95">
+            <i data-lucide="map" class="w-3.5 h-3.5"></i>
+            <span>Change Village</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick KPI Counters -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
+          <div class="text-[11px] text-slate-500 font-semibold uppercase tracking-wide">Total Demand Files</div>
+          <div class="text-2xl font-extrabold text-slate-900 mt-1" id="kpiDemandsTotal">0</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Across all 10 villages</div>
+        </div>
+        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
+          <div class="text-[11px] text-emerald-700 font-semibold uppercase tracking-wide">Current Target Month</div>
+          <div class="text-xl sm:text-2xl font-extrabold text-emerald-700 mt-1" id="kpiDemandsCurrentMonth">November 2026</div>
+          <div class="text-[11px] text-emerald-600/80 mt-0.5">Active demand cycle</div>
+        </div>
+        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
+          <div class="text-[11px] text-indigo-700 font-semibold uppercase tracking-wide">Reporting Villages</div>
+          <div class="text-2xl font-extrabold text-indigo-700 mt-1" id="kpiDemandsVillagesCount">0 / 10</div>
+          <div class="text-[11px] text-indigo-600/80 mt-0.5">Have submitted lists</div>
+        </div>
+        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
+          <div class="text-[11px] text-amber-700 font-semibold uppercase tracking-wide">Storage Backend</div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-800 mt-1.5 flex items-center gap-1.5" id="kpiStorageBackendText">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Supabase Ready
+          </div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Excel (.xlsx, .xls, .csv)</div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Upload Form + Demands File Directory -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Column 1: Upload Card (5 Cols) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-soft p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-emerald-100 text-emerald-700"><i data-lucide="upload" class="w-4 h-4"></i></span>
+                <h3 class="font-bold text-slate-900 text-base">Submit Village Demand List</h3>
+              </div>
+              <span class="text-[11px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded">Excel / Sheet</span>
+            </div>
+
+            <form id="demandUploadForm" onsubmit="handleDemandSubmit(event)" class="space-y-4">
+              <!-- Village Picker -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Target Village / Gram Panchayat <span class="text-red-500">*</span></label>
+                <select id="demandVillageInput" required class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 font-medium text-slate-800 focus:bg-white focus:border-emerald-500 transition">
+                  <option value="" disabled selected>-- Select Village --</option>
+                  <!-- Populated dynamically with the 10 villages -->
+                </select>
+              </div>
+
+              <!-- Month / Cycle Picker -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Demand Month <span class="text-red-500">*</span></label>
+                  <select id="demandMonthInput" required class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 font-medium text-slate-800 focus:bg-white focus:border-emerald-500 transition">
+                    <option value="November 2026" selected>November 2026</option>
+                    <option value="December 2026">December 2026</option>
+                    <option value="January 2027">January 2027</option>
+                    <option value="February 2027">February 2027</option>
+                    <option value="March 2027">March 2027</option>
+                    <option value="October 2026">October 2026</option>
+                    <option value="September 2026">September 2026</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Submitted By</label>
+                  <input type="text" id="demandSubmitterInput" placeholder="e.g. VEC Secy / Name" class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:bg-white focus:border-emerald-500 transition">
+                </div>
+              </div>
+
+              <!-- Drag & Drop Zone -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Excel Demand File (.xlsx, .xls, .csv) <span class="text-red-500">*</span></label>
+                <div id="dropZone" onclick="document.getElementById('demandFileInput').click()" class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-5 text-center cursor-pointer transition bg-slate-50/60 hover:bg-emerald-50/30 group">
+                  <input type="file" id="demandFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileSelected(this)">
+                  <div id="dropZonePrompt">
+                    <div class="w-10 h-10 mx-auto rounded-full bg-emerald-100 group-hover:scale-110 text-emerald-600 flex items-center justify-center transition">
+                      <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    </div>
+                    <div class="text-xs font-bold text-slate-700 mt-2">Click to browse or drag & drop</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Supports Microsoft Excel (.xlsx, .xls) and CSV</div>
+                  </div>
+                  <div id="dropZoneFilePreview" class="hidden">
+                    <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-emerald-200 shadow-xs">
+                      <div class="flex items-center gap-2.5 text-left truncate">
+                        <div class="p-1.5 rounded-lg bg-emerald-500 text-white shrink-0"><i data-lucide="file-check" class="w-4 h-4"></i></div>
+                        <div class="truncate">
+                          <div id="selectedFileName" class="text-xs font-bold text-slate-900 truncate">file.xlsx</div>
+                          <div id="selectedFileSize" class="text-[10px] text-slate-400">0 KB</div>
+                        </div>
+                      </div>
+                      <button type="button" onclick="clearSelectedFile(event)" class="text-slate-400 hover:text-red-500 p-1 rounded-lg transition" title="Remove file">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Remarks -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Remarks / Details (Optional)</label>
+                <textarea id="demandRemarksInput" rows="2" placeholder="e.g. 150 worker days, road & drainage repairs list" class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:bg-white focus:border-emerald-500 transition resize-none"></textarea>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" id="btnSubmitDemand" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-98">
+                <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                <span id="btnSubmitDemandText">Upload Demand File</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Column 2: Directory & Download Center (7 Cols) -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-soft p-5 flex flex-col">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-2">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                <span>Submitted Village Demands</span>
+                <span id="demandsCountPill" class="text-xs font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">0 files</span>
+              </h3>
+              <p class="text-xs text-slate-500">Download previously uploaded monthly lists for any village</p>
+            </div>
+          </div>
+
+          <!-- Filter Tools -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter by Month</label>
+              <select id="filterDemandMonth" onchange="filterDemandsList()" class="w-full text-xs font-semibold border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:bg-white focus:border-indigo-500">
+                <option value="ALL">All Months</option>
+                <option value="November 2026" selected>November 2026</option>
+                <option value="December 2026">December 2026</option>
+                <option value="January 2027">January 2027</option>
+                <option value="February 2027">February 2027</option>
+                <option value="March 2027">March 2027</option>
+                <option value="October 2026">October 2026</option>
+                <option value="September 2026">September 2026</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Search File / Notes</label>
+              <div class="relative">
+                <input type="text" id="filterDemandSearch" oninput="filterDemandsList()" placeholder="Search by village, name, file..." class="w-full text-xs border border-slate-200 rounded-xl pl-8 pr-3 py-2 bg-slate-50 text-slate-800 focus:bg-white focus:border-indigo-500">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Demands List / Table -->
+          <div class="flex-1 overflow-x-auto min-h-[340px]">
+            <div id="demandsEmptyState" class="hidden text-center py-12">
+              <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-2">
+                <i data-lucide="folder-open" class="w-6 h-6"></i>
+              </div>
+              <p class="text-sm font-bold text-slate-700">No demand lists submitted yet</p>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Upload an Excel file using the form on the left for November or any upcoming month.</p>
+            </div>
+
+            <div id="demandsTableContainer" class="space-y-3">
+              <!-- Dynamically populated demand cards / list -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: INCOMPLETE WORKS -->
     <!-- TAB 3: INCOMPLETE WORKS -->
     <section id="tab-works" class="tab-content hidden">
       <!-- In-Tab Active Village Banner -->
@@ -546,144 +749,7 @@
       </div>
     </section>
 
-    <!-- TAB 4: FINANCIALS -->
-    <section id="tab-financial" class="tab-content hidden">
-      <!-- In-Tab Active Village Banner -->
-      <div class="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50/70 border border-amber-200 rounded-2xl p-3.5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-soft animate-fade-up">
-        <div class="flex items-center gap-3">
-          <div class="p-2 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl shadow-sm shrink-0 flex items-center justify-center ring-2 ring-amber-200/70">
-            <i data-lucide="map-pin" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <div class="text-[11px] font-bold tracking-wider uppercase text-amber-700">Filtered Village Scope</div>
-            <div class="text-sm sm:text-base font-extrabold text-amber-950 flex items-center gap-2">
-              <span class="tab-active-village-name">All 10 Villages (Combined)</span>
-              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200 inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Active</span>
-            </div>
-          </div>
-        </div>
-        <button onclick="focusVillageSelect()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-amber-50 text-amber-800 px-3.5 py-2 rounded-xl transition shadow-sm ring-1 ring-amber-300/70 active:scale-95">
-          <i data-lucide="map" class="w-4 h-4"></i>
-          <span>Change Village</span>
-        </button>
-      </div>
-
-      <!-- Top Financial KPI Cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-indigo-100/70"></div>
-          <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-sm shrink-0"><i data-lucide="landmark" class="w-4 h-4"></i></div>
-            <div>
-              <div class="text-[11px] text-slate-500 font-semibold uppercase tracking-wide">Funds Released (Year)</div>
-              <div class="text-2xl font-extrabold text-slate-800" id="kpiFinRelease">₹0 L</div>
-            </div>
-          </div>
-        </div>
-        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-emerald-100/70"></div>
-          <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm shrink-0"><i data-lucide="wallet" class="w-4 h-4"></i></div>
-            <div>
-              <div class="text-[11px] text-emerald-600 font-semibold uppercase tracking-wide">Unskilled Wage Exp.</div>
-              <div class="text-2xl font-extrabold text-emerald-700" id="kpiFinWage">₹0 L</div>
-            </div>
-          </div>
-        </div>
-        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-violet-100/70"></div>
-          <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-sm shrink-0"><i data-lucide="package" class="w-4 h-4"></i></div>
-            <div>
-              <div class="text-[11px] text-indigo-600 font-semibold uppercase tracking-wide">Material Expenditure</div>
-              <div class="text-2xl font-extrabold text-indigo-700" id="kpiFinMat">₹0 L</div>
-            </div>
-          </div>
-        </div>
-        <div class="lift bg-white p-4 rounded-2xl border border-slate-200 shadow-soft relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-amber-100/70"></div>
-          <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm shrink-0"><i data-lucide="alert-circle" class="w-4 h-4"></i></div>
-            <div>
-              <div class="text-[11px] text-amber-600 font-semibold uppercase tracking-wide">Total Payment Due</div>
-              <div class="text-2xl font-extrabold text-amber-700" id="kpiFinDue">₹0 L</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 1: Gram Panchayat Financial Overview -->
-      <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-5 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <h2 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              <i data-lucide="landmark" class="w-5 h-5 text-indigo-600"></i>
-              <span>Gram Panchayat Financial Overview</span>
-            </h2>
-            <p class="text-slate-500 text-xs">Official State Citizen Fund Allocation & Expenditure Audit Statement (₹ in Lakhs).</p>
-          </div>
-          <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl text-xs text-slate-700">
-            <span class="text-slate-400">Panchayat:</span>
-            <span id="finActiveVillageBadge" class="font-bold text-indigo-700">All 10 Villages</span>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50/90 text-slate-500 border-b border-slate-200 text-[11px] uppercase tracking-widest font-bold">
-              <tr>
-                <th class="py-3 px-3">Gram Panchayat</th>
-                <th class="py-3 px-3 text-right">Released (₹ Lakhs)</th>
-                <th class="py-3 px-3 text-right">Unskilled Wage (₹ Lakhs)</th>
-                <th class="py-3 px-3 text-right">Material Exp (₹ Lakhs)</th>
-                <th class="py-3 px-3 text-right">Total Exp (₹ Lakhs)</th>
-                <th class="py-3 px-3 text-right">Balance (₹ Lakhs)</th>
-                <th class="py-3 px-3 text-right">Payment Due (₹ Lakhs)</th>
-              </tr>
-            </thead>
-            <tbody id="finSummaryTableBody" class="divide-y divide-slate-100">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Section 2: Master Works & Wage Disbursements -->
-      <div class="bg-white rounded-2xl shadow-soft border border-slate-200/80 p-5 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              <i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-600"></i>
-              <span>Master Works & Muster Roll Disbursements</span>
-            </h2>
-            <p class="text-slate-500 text-xs">Specific development works with linked muster roll payment slips.</p>
-          </div>
-          <input type="text" id="financialSearchInput" placeholder="Search work name, code, or GP..." 
-                 class="border border-slate-200 bg-slate-50/70 hover:bg-white rounded-xl px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400 transition"
-                 oninput="filterFinancialWorks()">
-        </div>
-
-        <div id="financialEmpty" class="hidden text-center py-10 text-slate-500">
-          No master work records found for this selection.
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm" id="financialTable">
-            <thead class="bg-slate-50/90 text-slate-500 border-b border-slate-200 text-[11px] uppercase tracking-widest font-bold">
-              <tr>
-                <th class="py-3 px-3 w-40">Gram Panchayat</th>
-                <th class="py-3 px-3">Work Name & Code</th>
-                <th class="py-3 px-3 text-right w-36">Total Wage Exp (₹)</th>
-                <th class="py-3 px-3 text-right">Clickable eMR Slips</th>
-              </tr>
-            </thead>
-            <tbody id="financialTableBody" class="divide-y divide-slate-100">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    
 
   </main>
 
@@ -962,7 +1028,8 @@
       filterJobCards(true);
       filterMuster(true);
       renderWorks();
-      renderFinancial();
+      renderDemands();
+      populateDemandVillagesDropdown();
       updateNavBadges();
       lucide.createIcons();
     }
@@ -986,11 +1053,11 @@
       const worksCountBadge = document.getElementById('worksBadgeCount');
       if (worksCountBadge) worksCountBadge.innerText = activeWorks.length;
 
-      const activeFinWorks = (appData.financial_statement || []).filter(w => 
-        (currentGlobalVillage === 'ALL') || normalizeVillage(w.panchayat) === normalizeVillage(currentGlobalVillage)
+      const activeDemands = (demandsList || []).filter(d => 
+        (currentGlobalVillage === 'ALL') || normalizeVillage(d.village) === normalizeVillage(currentGlobalVillage)
       );
-      const finCountBadge = document.getElementById('finBadgeCount');
-      if (finCountBadge) finCountBadge.innerText = activeFinWorks.length;
+      const demandsCountBadge = document.getElementById('demandsBadgeCount');
+      if (demandsCountBadge) demandsCountBadge.innerText = activeDemands.length;
     }
 
     // 1. ACTIVE JOB CARDS
@@ -1911,7 +1978,506 @@
     }
 
     // Initialize
+    
+    // ==========================================
+    // 3. VILLAGE DEMANDS SUBMISSION & STORAGE
+    // ==========================================
+    let demandsList = [];
+    let selectedDemandFile = null;
+    let supabaseClient = null;
+
+    // Database wrapper for Demo Mode (stores actual files in browser IndexedDB)
+    const DemoDB = {
+      dbName: 'ThingsulthliahDemandsDB',
+      storeName: 'files',
+      open() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(this.dbName, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(this.storeName)) {
+              db.createObjectStore(this.storeName, { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      },
+      async saveFile(id, file) {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          store.put({ id, file, name: file.name, type: file.type });
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => reject(tx.error);
+        });
+      },
+      async getFile(id) {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, 'readonly');
+          const store = tx.objectStore(this.storeName);
+          const req = store.get(id);
+          req.onsuccess = () => resolve(req.result ? req.result.file : null);
+          req.onerror = () => reject(req.error);
+        });
+      },
+      async deleteFile(id) {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          store.delete(id);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+    };
+
+    function initSupabase() {
+      const url = localStorage.getItem('supabase_url') || '';
+      const key = localStorage.getItem('supabase_key') || '';
+      const badge = document.getElementById('storageModeBadge');
+      const backendText = document.getElementById('kpiStorageBackendText');
+
+      if (url && key && window.supabase) {
+        try {
+          supabaseClient = window.supabase.createClient(url, key);
+          if (badge) {
+            badge.className = 'text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full ring-1 ring-emerald-200 inline-flex items-center gap-1';
+            badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Supabase Cloud Connected';
+          }
+          if (backendText) {
+            backendText.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Supabase Cloud';
+          }
+        } catch (e) {
+          console.warn('Supabase initialization failed:', e);
+          supabaseClient = null;
+        }
+      } else {
+        supabaseClient = null;
+        if (badge) {
+          badge.className = 'text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full ring-1 ring-amber-200 inline-flex items-center gap-1';
+          badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Demo Mode (Browser Storage)';
+        }
+        if (backendText) {
+          backendText.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span> Browser Storage (Demo)';
+        }
+      }
+    }
+
+    function populateDemandVillagesDropdown() {
+      const sel = document.getElementById('demandVillageInput');
+      if (!sel) return;
+      sel.innerHTML = '<option value="" disabled selected>-- Select Village --</option>';
+      TARGET_10_VILLAGES.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.label;
+        opt.innerText = v.label + ' GP';
+        sel.appendChild(opt);
+      });
+
+      // If global village is set to a specific village, select it by default
+      if (currentGlobalVillage !== 'ALL') {
+        const found = TARGET_10_VILLAGES.find(v => v.key === normalizeVillage(currentGlobalVillage));
+        if (found) sel.value = found.label;
+      }
+    }
+
+    function handleFileSelected(input) {
+      if (input.files && input.files[0]) {
+        const f = input.files[0];
+        const ext = f.name.split('.').pop().toLowerCase();
+        if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+          alert('Please select an Excel (.xlsx, .xls) or CSV file.');
+          input.value = '';
+          return;
+        }
+        selectedDemandFile = f;
+        document.getElementById('selectedFileName').innerText = f.name;
+        document.getElementById('selectedFileSize').innerText = (f.size / 1024).toFixed(1) + ' KB';
+        document.getElementById('dropZonePrompt').classList.add('hidden');
+        document.getElementById('dropZoneFilePreview').classList.remove('hidden');
+        lucide.createIcons();
+      }
+    }
+
+    function clearSelectedFile(e) {
+      if (e) e.stopPropagation();
+      selectedDemandFile = null;
+      const inp = document.getElementById('demandFileInput');
+      if (inp) inp.value = '';
+      document.getElementById('dropZonePrompt').classList.remove('hidden');
+      document.getElementById('dropZoneFilePreview').classList.add('hidden');
+    }
+
+    async function handleDemandSubmit(e) {
+      e.preventDefault();
+      if (!selectedDemandFile) {
+        alert('Please choose an Excel file to upload.');
+        return;
+      }
+
+      const village = document.getElementById('demandVillageInput').value;
+      const month = document.getElementById('demandMonthInput').value;
+      const submitter = document.getElementById('demandSubmitterInput').value.trim();
+      const remarks = document.getElementById('demandRemarksInput').value.trim();
+
+      const btn = document.getElementById('btnSubmitDemand');
+      const btnText = document.getElementById('btnSubmitDemandText');
+      btn.disabled = true;
+      btnText.innerText = 'Uploading...';
+
+      const demandId = 'dem_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      const createdAt = new Date().toISOString();
+
+      try {
+        if (supabaseClient) {
+          // Cloud Supabase Upload
+          const bucket = localStorage.getItem('supabase_bucket') || 'village-demands';
+          const cleanVillage = village.replace(/[^a-zA-Z0-9]/g, '_');
+          const cleanMonth = month.replace(/[^a-zA-Z0-9]/g, '_');
+          const filePath = `${cleanMonth}/${cleanVillage}_${Date.now()}_${selectedDemandFile.name}`;
+
+          const { data: uploadData, error: uploadErr } = await supabaseClient.storage
+            .from(bucket)
+            .upload(filePath, selectedDemandFile, { upsert: true });
+
+          if (uploadErr) throw uploadErr;
+
+          const { data: publicUrlData } = supabaseClient.storage.from(bucket).getPublicUrl(filePath);
+          const fileUrl = publicUrlData ? publicUrlData.publicUrl : '';
+
+          const record = {
+            id: demandId,
+            village,
+            month,
+            file_name: selectedDemandFile.name,
+            file_url: fileUrl,
+            file_size: selectedDemandFile.size,
+            submitted_by: submitter || 'VEC Official',
+            remarks: remarks || '',
+            created_at: createdAt
+          };
+
+          const { error: insertErr } = await supabaseClient.from('village_demands').insert([record]);
+          if (insertErr) throw insertErr;
+
+        } else {
+          // Browser IndexedDB / LocalStorage Demo Mode
+          await DemoDB.saveFile(demandId, selectedDemandFile);
+
+          const record = {
+            id: demandId,
+            village,
+            month,
+            file_name: selectedDemandFile.name,
+            file_url: 'local://' + demandId,
+            file_size: selectedDemandFile.size,
+            submitted_by: submitter || 'VEC Official',
+            remarks: remarks || '',
+            created_at: createdAt
+          };
+
+          const localList = JSON.parse(localStorage.getItem('thingsulthliah_demands') || '[]');
+          localList.unshift(record);
+          localStorage.setItem('thingsulthliah_demands', JSON.stringify(localList));
+        }
+
+        // Reset form
+        clearSelectedFile();
+        document.getElementById('demandRemarksInput').value = '';
+        alert(`Successfully uploaded demand list for ${village} (${month})!`);
+        await loadDemands();
+      } catch (err) {
+        console.error('Upload failed:', err);
+        alert('Failed to upload file: ' + (err.message || err));
+      } finally {
+        btn.disabled = false;
+        btnText.innerText = 'Upload Demand File';
+      }
+    }
+
+    async function loadDemands() {
+      try {
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('village_demands')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (!error && data) {
+            demandsList = data;
+          } else {
+            demandsList = JSON.parse(localStorage.getItem('thingsulthliah_demands') || '[]');
+          }
+        } else {
+          demandsList = JSON.parse(localStorage.getItem('thingsulthliah_demands') || '[]');
+        }
+      } catch (e) {
+        demandsList = JSON.parse(localStorage.getItem('thingsulthliah_demands') || '[]');
+      }
+      renderDemands();
+    }
+
+    function renderDemands() {
+      filterDemandsList();
+    }
+
+    function filterDemandsList() {
+      const monthFilter = document.getElementById('filterDemandMonth')?.value || 'ALL';
+      const q = (document.getElementById('filterDemandSearch')?.value || '').toLowerCase().trim();
+
+      const filtered = demandsList.filter(d => {
+        const matchesGlobalVillage = (currentGlobalVillage === 'ALL') || 
+          normalizeVillage(d.village) === normalizeVillage(currentGlobalVillage);
+        const matchesMonth = (monthFilter === 'ALL') || (d.month === monthFilter);
+        const matchesQ = !q || 
+          (d.village || '').toLowerCase().includes(q) ||
+          (d.file_name || '').toLowerCase().includes(q) ||
+          (d.submitted_by || '').toLowerCase().includes(q) ||
+          (d.remarks || '').toLowerCase().includes(q);
+        return matchesGlobalVillage && matchesMonth && matchesQ;
+      });
+
+      // Update KPIs
+      const kpiTotal = document.getElementById('kpiDemandsTotal');
+      if (kpiTotal) kpiTotal.innerText = demandsList.length;
+
+      const uniqueReportingVillages = new Set(demandsList.map(d => normalizeVillage(d.village)));
+      const kpiVillages = document.getElementById('kpiDemandsVillagesCount');
+      if (kpiVillages) kpiVillages.innerText = `${uniqueReportingVillages.size} / 10`;
+
+      const badge = document.getElementById('demandsBadgeCount');
+      if (badge) badge.innerText = filtered.length;
+
+      const pill = document.getElementById('demandsCountPill');
+      if (pill) pill.innerText = `${filtered.length} files`;
+
+      const empty = document.getElementById('demandsEmptyState');
+      const container = document.getElementById('demandsTableContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+      if (filtered.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      filtered.forEach(d => {
+        const dt = new Date(d.created_at);
+        const dateStr = dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const timeStr = dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const sizeKB = d.file_size ? (d.file_size / 1024).toFixed(1) + ' KB' : 'Excel Sheet';
+
+        const card = document.createElement('div');
+        card.className = 'lift bg-slate-50/80 hover:bg-white border border-slate-200/90 rounded-2xl p-4 transition shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
+        card.innerHTML = `
+          <div class="flex items-start gap-3 truncate">
+            <div class="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shrink-0 mt-0.5 shadow-xs">
+              <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+            </div>
+            <div class="truncate">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-extrabold text-slate-900 text-sm">${d.village} GP</span>
+                <span class="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full ring-1 ring-emerald-200/60">${d.month}</span>
+                <span class="text-[10px] text-slate-400 font-mono">${dateStr} • ${timeStr}</span>
+              </div>
+              <div class="text-xs font-bold text-indigo-700 truncate mt-1 flex items-center gap-1.5">
+                <span>${d.file_name}</span>
+                <span class="text-[10px] text-slate-400 font-normal">(${sizeKB})</span>
+              </div>
+              ${d.remarks ? `<div class="text-xs text-slate-500 mt-1 italic">"${d.remarks}"</div>` : ''}
+              ${d.submitted_by ? `<div class="text-[11px] text-slate-400 mt-0.5">Submitted by: <strong class="text-slate-600">${d.submitted_by}</strong></div>` : ''}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+            <button onclick="downloadDemandFile('${d.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl transition shadow-sm active:scale-95">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Download Excel</span>
+            </button>
+            <button onclick="deleteDemandRecord('${d.id}')" class="text-slate-400 hover:text-red-600 p-2 rounded-xl hover:bg-red-50 transition" title="Delete record">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    async function downloadDemandFile(demandId) {
+      const rec = demandsList.find(d => d.id === demandId);
+      if (!rec) return;
+
+      if (rec.file_url && !rec.file_url.startsWith('local://')) {
+        // Direct download from Supabase Cloud URL
+        window.open(rec.file_url, '_blank');
+      } else {
+        // Download from IndexedDB in Demo Mode
+        try {
+          const file = await DemoDB.getFile(demandId);
+          if (file) {
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = rec.file_name || 'demand_list.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+          } else {
+            alert('File not found in local browser storage.');
+          }
+        } catch (err) {
+          alert('Could not download file: ' + err.message);
+        }
+      }
+    }
+
+    async function deleteDemandRecord(demandId) {
+      if (!confirm('Are you sure you want to delete this submitted demand?')) return;
+
+      try {
+        if (supabaseClient) {
+          await supabaseClient.from('village_demands').delete().eq('id', demandId);
+        } else {
+          await DemoDB.deleteFile(demandId);
+          const localList = JSON.parse(localStorage.getItem('thingsulthliah_demands') || '[]').filter(d => d.id !== demandId);
+          localStorage.setItem('thingsulthliah_demands', JSON.stringify(localList));
+        }
+        await loadDemands();
+      } catch (err) {
+        alert('Could not delete: ' + err.message);
+      }
+    }
+
+    // Supabase Settings Modal Controls
+    function openSupabaseModal() {
+      document.getElementById('supabaseUrlInput').value = localStorage.getItem('supabase_url') || '';
+      document.getElementById('supabaseAnonKeyInput').value = localStorage.getItem('supabase_key') || '';
+      document.getElementById('supabaseBucketInput').value = localStorage.getItem('supabase_bucket') || 'village-demands';
+      document.getElementById('supabaseModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeSupabaseModal() {
+      document.getElementById('supabaseModal').classList.add('hidden');
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('supabaseUrlInput').value.trim();
+      const key = document.getElementById('supabaseAnonKeyInput').value.trim();
+      const bucket = document.getElementById('supabaseBucketInput').value.trim() || 'village-demands';
+
+      if (url && !url.startsWith('http')) {
+        alert('Please enter a valid Supabase URL starting with https://');
+        return;
+      }
+
+      localStorage.setItem('supabase_url', url);
+      localStorage.setItem('supabase_key', key);
+      localStorage.setItem('supabase_bucket', bucket);
+
+      initSupabase();
+      closeSupabaseModal();
+      loadDemands();
+      alert(url && key ? 'Supabase cloud configuration saved! Connected to cloud.' : 'Switched to browser demo storage.');
+    }
+
+    function clearSupabaseConfig() {
+      localStorage.removeItem('supabase_url');
+      localStorage.removeItem('supabase_key');
+      localStorage.removeItem('supabase_bucket');
+      initSupabase();
+      closeSupabaseModal();
+      loadDemands();
+      alert('Reset to local browser demo storage.');
+    }
+
+    function copySupabaseSQL() {
+      const sql = document.getElementById('supabaseSqlBlock').innerText;
+      navigator.clipboard.writeText(sql).then(() => {
+        alert('SQL query copied to clipboard! Paste it into Supabase SQL Editor.');
+      });
+    }
+
+
     loadData();
   </script>
+  <!-- Supabase Cloud Storage Configuration Modal -->
+  <div id="supabaseModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-fade-up max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-emerald-100 text-emerald-700 rounded-xl"><i data-lucide="database" class="w-5 h-5"></i></div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Supabase Cloud Storage</h3>
+            <p class="text-xs text-slate-500">Free permanent online database & Excel file storage</p>
+          </div>
+        </div>
+        <button onclick="closeSupabaseModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-indigo-50/70 border border-indigo-200/70 rounded-2xl p-3.5 text-xs text-indigo-900 space-y-1">
+          <div class="font-bold flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-indigo-600"></i> How Supabase Free works:</div>
+          <p class="text-slate-600">You can create a free project at <a href="https://supabase.com" target="_blank" class="text-indigo-600 font-bold underline">supabase.com</a>. Once you paste your Project URL and Public Anon Key below, all Excel uploads will be stored permanently in your cloud bucket.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Project URL</label>
+          <input type="text" id="supabaseUrlInput" placeholder="https://xyzproject.supabase.co" class="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-900 focus:bg-white focus:border-emerald-500 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Public Anon Key</label>
+          <input type="password" id="supabaseAnonKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-900 focus:bg-white focus:border-emerald-500 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Storage Bucket Name</label>
+          <input type="text" id="supabaseBucketInput" value="village-demands" class="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-900 focus:bg-white focus:border-emerald-500 transition">
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
+            <span>SQL Setup Query (Run in Supabase SQL Editor):</span>
+            <button onclick="copySupabaseSQL()" class="text-emerald-700 hover:text-emerald-800 text-[11px] font-bold">Copy SQL</button>
+          </div>
+          <pre id="supabaseSqlBlock" class="text-[10px] font-mono text-slate-600 bg-white p-2 rounded-lg border border-slate-200 overflow-x-auto max-h-24">create table if not exists village_demands (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamptz default now() not null,
+  village text not null,
+  month text not null,
+  file_name text not null,
+  file_url text not null,
+  file_size bigint,
+  submitted_by text,
+  remarks text
+);
+insert into storage.buckets (id, name, public) values ('village-demands', 'village-demands', true) on conflict do nothing;
+create policy "Allow Public Uploads" on storage.objects for insert with check (bucket_id = 'village-demands');
+create policy "Allow Public Reads" on storage.objects for select using (bucket_id = 'village-demands');
+alter table village_demands enable row level security;
+create policy "Allow Public Select" on village_demands for select using (true);
+create policy "Allow Public Insert" on village_demands for insert with check (true);
+create policy "Allow Public Delete" on village_demands for delete using (true);</pre>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <button onclick="clearSupabaseConfig()" class="text-xs font-bold text-slate-500 hover:text-red-600 transition">Reset to Demo Mode</button>
+          <div class="flex items-center gap-2">
+            <button onclick="closeSupabaseModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancel</button>
+            <button onclick="saveSupabaseConfig()" class="px-5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md transition">Save & Connect</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
