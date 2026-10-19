@@ -956,6 +956,10 @@
         populateGlobalVillageDropdown();
         onGlobalVillageChange('ALL');
 
+        // Initialize Supabase & load village demands on page load
+        initSupabase();
+        loadDemands();
+
         document.getElementById('loadingState').classList.add('hidden');
         switchTab('jobcards');
         lucide.createIcons();
@@ -987,6 +991,7 @@
 
       const activeSection = document.getElementById('tab-' + tabId);
       if (activeSection) activeSection.classList.remove('hidden');
+      if (tabId === 'demands') loadDemands();
 
       const activeBtn = document.getElementById('tabBtn-' + tabId);
       if (activeBtn) {
@@ -2060,9 +2065,15 @@
       }
     };
 
+    // Hardcoded Supabase Project Configuration
+    const HARDCODED_SUPABASE_URL = "https://jbvguwpmgakyeqwbpmqm.supabase.co";
+    const HARDCODED_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impidmd1d3BtZ2FreWVxd2JwbXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzODI5NTIsImV4cCI6MjEwNzk1ODk1Mn0.fvvVKO67wOS9xFyR-co8QvQmhl4dCNSyfHAkLrsmmi4";
+    const HARDCODED_SUPABASE_BUCKET = "village-demands";
+
     function initSupabase() {
-      const url = localStorage.getItem('supabase_url') || '';
-      const key = localStorage.getItem('supabase_key') || '';
+      const url = localStorage.getItem('supabase_url') || HARDCODED_SUPABASE_URL;
+      const key = localStorage.getItem('supabase_key') || HARDCODED_SUPABASE_KEY;
+      const bucket = localStorage.getItem('supabase_bucket') || HARDCODED_SUPABASE_BUCKET;
       const badge = document.getElementById('storageModeBadge');
       const backendText = document.getElementById('kpiStorageBackendText');
 
@@ -2160,7 +2171,7 @@
       try {
         if (supabaseClient) {
           // Cloud Supabase Upload
-          const bucket = localStorage.getItem('supabase_bucket') || 'village-demands';
+          const bucket = localStorage.getItem('supabase_bucket') || HARDCODED_SUPABASE_BUCKET;
           const cleanVillage = village.replace(/[^a-zA-Z0-9]/g, '_');
           const cleanMonth = month.replace(/[^a-zA-Z0-9]/g, '_');
           const filePath = `${cleanMonth}/${cleanVillage}_${Date.now()}_${selectedDemandFile.name}`;
@@ -2169,7 +2180,12 @@
             .from(bucket)
             .upload(filePath, selectedDemandFile, { upsert: true });
 
-          if (uploadErr) throw uploadErr;
+          if (uploadErr) {
+            if (uploadErr.message && uploadErr.message.toLowerCase().includes('bucket not found')) {
+              throw new Error(`Storage bucket '${bucket}' not found in Supabase. Please go to Supabase Dashboard -> Storage and create a public bucket named '${bucket}'.`);
+            }
+            throw uploadErr;
+          }
 
           const { data: publicUrlData } = supabaseClient.storage.from(bucket).getPublicUrl(filePath);
           const fileUrl = publicUrlData ? publicUrlData.publicUrl : '';
@@ -2381,9 +2397,9 @@
 
     // Supabase Settings Modal Controls
     function openSupabaseModal() {
-      document.getElementById('supabaseUrlInput').value = localStorage.getItem('supabase_url') || '';
-      document.getElementById('supabaseAnonKeyInput').value = localStorage.getItem('supabase_key') || '';
-      document.getElementById('supabaseBucketInput').value = localStorage.getItem('supabase_bucket') || 'village-demands';
+      document.getElementById('supabaseUrlInput').value = localStorage.getItem('supabase_url') || HARDCODED_SUPABASE_URL;
+      document.getElementById('supabaseAnonKeyInput').value = localStorage.getItem('supabase_key') || HARDCODED_SUPABASE_KEY;
+      document.getElementById('supabaseBucketInput').value = localStorage.getItem('supabase_bucket') || HARDCODED_SUPABASE_BUCKET;
       document.getElementById('supabaseModal').classList.remove('hidden');
       lucide.createIcons();
     }
