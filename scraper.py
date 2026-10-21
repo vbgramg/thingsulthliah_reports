@@ -690,6 +690,17 @@ def run_pipeline():
     
     # Step 1: Active Job Cards across the 10 target Panchayats
     active_jcs = scrape_job_cards()
+    
+    # CRITICAL FAIL-SAFE: Government portal (vbgramgrep.dord.gov.in) returns 401 Unauthorized to foreign/cloud IPs
+    if len(active_jcs) < 500:
+        print("="*60)
+        print(f" [CRITICAL ERROR] Scraped only {len(active_jcs)} active job cards (expected >3000)!")
+        print(" The government portal (vbgramgrep.dord.gov.in) returned 401 Unauthorized or blocked the runner IP.")
+        print(" [SAFETY GUARD TRIGGERED] ABORTING immediately without touching existing data files.")
+        print(" Existing production data will be 100% preserved.")
+        print("="*60)
+        sys.exit(1)
+        
     valid_jc_set = {j['job_card_no'] for j in active_jcs}
     
     # Step 2: Financial Statements & Master Works & eMRs
@@ -746,6 +757,11 @@ def run_pipeline():
     latest_file = os.path.join(output_dir, "latest.json")
     passbook_file = os.path.join(output_dir, "passbook.json")
     
+    # Extra guard before file write
+    if len(active_jcs) < 500 or len(fin_data.get('emrs', [])) < 100:
+        print(" [SAFETY GUARD] Incomplete scrape results. Aborting write to prevent data loss.")
+        sys.exit(1)
+
     with open(latest_file, "w", encoding="utf-8") as f:
         json.dump(core_data, f, ensure_ascii=False, separators=(',', ':'))
 
