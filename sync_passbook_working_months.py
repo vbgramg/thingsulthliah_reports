@@ -134,17 +134,20 @@ def main():
             if wl:
                 passbook_wls.add(wl)
                 
-    missing_wls = [wl for wl in passbook_wls if wl not in wagelist_to_work]
-    print(f"Passbook has {len(passbook_wls)} unique Wagelist IDs. Missing from cache: {len(missing_wls)}")
+    parsed_emr_links = set(wl_cache.get('parsed_emr_links', []))
+    to_scan = [m for m in emrs if m.get('link') and m['link'] not in parsed_emr_links]
     
-    if len(missing_wls) > 0 or len(wagelist_to_work) < 50:
-        print(f"Scanning all {len(emrs)} eMR sheets to build comprehensive Wagelist index...")
+    missing_wls = [wl for wl in passbook_wls if wl not in wagelist_to_work]
+    print(f"Passbook has {len(passbook_wls)} unique Wagelist IDs ({len(missing_wls)} unmapped). New eMRs to scan: {len(to_scan)}/{len(emrs)}")
+    
+    if len(to_scan) > 0 or len(wagelist_to_work) < 50:
+        print(f"Scanning {len(to_scan)} new eMR sheets to update Wagelist index...")
         start_t = time.time()
         completed = 0
-        total = len(emrs)
+        total = len(to_scan)
         
         with ThreadPoolExecutor(max_workers=30) as executor:
-            futures = [executor.submit(parse_emr_sheet, m) for m in emrs]
+            futures = [executor.submit(parse_emr_sheet, m) for m in to_scan]
             for fut in as_completed(futures):
                 res = fut.result()
                 if res:
@@ -161,14 +164,21 @@ def main():
                     rate = completed / elapsed if elapsed > 0 else 0
                     print(f"  [{completed}/{total}] parsed ({rate:.1f} eMR/s, found {len(wagelist_to_work)} WLs)...")
                     
+        for m in to_scan:
+            if m.get('link'):
+                parsed_emr_links.add(m['link'])
+                
         # Save cache
         wl_cache = {
             "wagelist_to_work": wagelist_to_work,
-            "worker_wl_to_work": worker_wl_to_work
+            "worker_wl_to_work": worker_wl_to_work,
+            "parsed_emr_links": list(parsed_emr_links)
         }
         with open(WL_CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(wl_cache, f, ensure_ascii=False)
-        print(f"Wagelist cache created with {len(wagelist_to_work)} Wagelists and {len(worker_wl_to_work)} worker pairs.")
+        print(f"Wagelist cache updated with {len(wagelist_to_work)} Wagelists and {len(worker_wl_to_work)} worker pairs.")
+    else:
+        print(f"All {len(emrs)} eMR sheets already indexed in cache. Skipping re-scan.")
 
     # Now enrich all worker payments in passbook.json
     matched_exact = 0

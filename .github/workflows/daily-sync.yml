@@ -1,10 +1,9 @@
 name: Daily Mizoram VB-G RAM G Sync (Thingsulthliah Block)
 
 on:
-  schedule:
-    # Runs at 00:25 UTC (5:55 AM IST) and 12:25 UTC (5:55 PM IST)
-    - cron: '25 0,12 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub Actions UI anytime
+  # NOTE: The NIC portal (vbgramgrep.dord.gov.in) geo-blocks non-Indian / cloud datacenter IPs (401 Unauthorized).
+  # Automated daily scraping is performed by the Windows Scheduled Task on the local Indian residential machine.
+  workflow_dispatch: # Allows manual triggering from GitHub Actions UI if needed
 
 permissions:
   contents: write

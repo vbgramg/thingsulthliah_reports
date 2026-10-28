@@ -3,3 +3,7 @@ __pycache__/
 *.pyo
 .DS_Store
 Thumbs.db
+*.log
+auto_sync.log
+daily_sync.bat
+silent_runner.vbs
