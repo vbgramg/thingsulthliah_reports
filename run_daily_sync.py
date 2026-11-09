@@ -52,26 +52,43 @@ def sync_repository(repo_path, repo_name):
     # 1. Ensure git uses schannel
     subprocess.run(["git", "config", "http.sslBackend", "schannel"], cwd=repo_path, creationflags=0x08000000)
 
-    # 2. Run scraper.py
-    t0 = time.time()
-    res = subprocess.run(
-        [sys.executable, "scraper.py"],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="ignore",
-        creationflags=0x08000000
-    )
-    duration = time.time() - t0
+    # 2. Run scraper.py (with automatic retry if initial network connection was down/unstable)
+    max_attempts = 2
+    for attempt in range(1, max_attempts + 1):
+        t0 = time.time()
+        res = subprocess.run(
+            [sys.executable, "scraper.py"],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="ignore",
+            creationflags=0x08000000
+        )
+        duration = time.time() - t0
 
-    if res.returncode != 0:
-        log(f"[ERROR] {repo_name} scraper failed with code {res.returncode} in {duration:.1f}s.")
-        if res.stderr:
-            log(f"[STDERR] {res.stderr.strip()[:300]}")
-        return False
-
-    log(f"[SUCCESS] {repo_name} scraper finished in {duration:.1f}s.")
+        if res.returncode == 0:
+            log(f"[SUCCESS] {repo_name} scraper finished in {duration:.1f}s.")
+            break
+        else:
+            err_msg = ""
+            if res.stdout:
+                lines = [l.strip() for l in res.stdout.splitlines() if any(k in l for k in ['[CRITICAL', '[ERROR', 'Failed', 'Exception', 'Traceback'])]
+                if lines:
+                    err_msg = " | ".join(lines[-2:])
+                else:
+                    err_msg = res.stdout.strip()[-200:]
+            if res.stderr:
+                err_msg = (err_msg + " | " + res.stderr.strip()[:150]) if err_msg else res.stderr.strip()[:200]
+            
+            if attempt < max_attempts:
+                log(f"[WARN] {repo_name} scraper attempt {attempt} failed in {duration:.1f}s ({err_msg}). Retrying in 15 seconds (waiting for network stabilization)...")
+                time.sleep(15)
+            else:
+                log(f"[ERROR] {repo_name} scraper failed with code {res.returncode} in {duration:.1f}s.")
+                if err_msg:
+                    log(f"[REASON] {err_msg}")
+                return False
 
     # 3. Check for git changes in data/
     subprocess.run(["git", "add", "data/"], cwd=repo_path, creationflags=0x08000000)
