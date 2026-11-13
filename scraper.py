@@ -688,34 +688,80 @@ def run_pipeline():
     URL_INCOMPLETE = "https://vbgramgrep.dord.gov.in/VBGRAMG/takenup_compwrk.aspx?payload=G-UVLT1FagC8uTppD76rp3KLX3mBlBqVP4HqiCyIQ0PFnmqJLY4Arwf3Qi9AgPROExjireuM25o_uFzkeuUJPjlo367hlq8C0Nc0N6biZCUAHa5IXZFpAFmb0ttsQH_q_MPWtsjIU1FI9gYrErY4hMCV9B6nEGB14_QhK4404D7XptiefoCCR3fdovgR2__c3ZJwt16mI2N5G0A6qvMVBDW8VzbiR3rfIAzL4lxb2PxMDUEexADihqd8JjTh-2FLxOEBiSiQFEmztNmUtGUE_PeEm7uxF8qN8WjJbIPc1OA"
     URL_FTO = "https://vbgramgrep.dord.gov.in/VBGRAMG/FTO/fto_sign_detail.aspx?payload=S8PVx6KrcN2L5Sq7rfaKNG6IPaqZw0xKnH3rh0rZgwMMeThsr7eUZsNaHSOaEQn4hziUB86UyVLoSzs05ltekaM_T0kPqfLBQRRbFjaqeKcNam979FahxdEU153y3vKeSr6AUxK8rKtC0LESBe9OGcYaMPgcbPf3rCZtw8PiyYFJlYm-Q_HcJ_R2Cvn2vznkzKePxWJQS5J1I21GlZt8LJvGi7z0CSu-8VBmNlint_RHrsXyTolThpnMFZJ_1NXX82mwUU3rvvoII3YxwXWYlQyY71uO5Y7AIOyIGWCT-JLlAXfyH_uoOuvyV1-9qCBi"
     
+    output_dir = os.path.join(os.path.dirname(__file__), "data")
+    os.makedirs(output_dir, exist_ok=True)
+    latest_file = os.path.join(output_dir, "latest.json")
+    passbook_file = os.path.join(output_dir, "passbook.json")
+
+    # Load existing production data to support resilient per-module fallbacks
+    prev_core = {}
+    prev_passbook = {}
+    if os.path.exists(latest_file):
+        try:
+            with open(latest_file, "r", encoding="utf-8") as f:
+                prev_core = json.load(f)
+        except Exception as e:
+            print(f"[WARN] Could not read existing latest.json: {e}")
+
+    if os.path.exists(passbook_file):
+        try:
+            with open(passbook_file, "r", encoding="utf-8") as f:
+                prev_passbook = json.load(f)
+        except Exception as e:
+            print(f"[WARN] Could not read existing passbook.json: {e}")
+
     # Step 1: Active Job Cards across the 10 target Panchayats
     active_jcs = scrape_job_cards()
+    live_jc_success = True
     
-    # CRITICAL FAIL-SAFE: Government portal (vbgramgrep.dord.gov.in) returns 401 Unauthorized to foreign/cloud IPs
+    # RESILIENT FALLBACK: If government registration page is down / crashing
     if len(active_jcs) < 500:
-        print("="*60)
-        print(f" [CRITICAL ERROR] Scraped only {len(active_jcs)} active job cards (expected >3000)!")
-        print(" The government portal (vbgramgrep.dord.gov.in) returned 401 Unauthorized or blocked the runner IP.")
-        print(" [SAFETY GUARD TRIGGERED] ABORTING immediately without touching existing data files.")
-        print(" Existing production data will be 100% preserved.")
-        print("="*60)
-        sys.exit(1)
+        prev_jcs = prev_core.get('job_cards', [])
+        if len(prev_jcs) >= 500:
+            print("="*60)
+            print(f" [NOTICE] Government Job Card registration portal is temporarily down/returning errors.")
+            print(f" [FALLBACK ACTIVATED] Preserving {len(prev_jcs)} active Job Cards from previous verified snapshot.")
+            print(f" Continuing pipeline for Financial Statements, Muster Rolls, Incomplete Works & FTOs...")
+            print("="*60)
+            active_jcs = prev_jcs
+            live_jc_success = False
+        else:
+            print("="*60)
+            print(f" [CRITICAL ERROR] Scraped only {len(active_jcs)} active job cards (expected >3000) and no cache exists!")
+            print(" The government portal (vbgramgrep.dord.gov.in) returned 401 Unauthorized or blocked the runner IP.")
+            print(" [SAFETY GUARD TRIGGERED] ABORTING immediately without touching existing data files.")
+            print("="*60)
+            sys.exit(1)
         
     valid_jc_set = {j['job_card_no'] for j in active_jcs}
     
     # Step 2: Financial Statements & Master Works & eMRs
     fin_data = scrape_financial_and_works(URL_FINANCIAL)
-    enrich_emr_working_dates(fin_data)
+    if len(fin_data.get('emrs', [])) < 100 and len(prev_core.get('muster_rolls', [])) >= 100:
+        print(f" [FALLBACK] Financial module returned low eMRs. Preserving {len(prev_core['muster_rolls'])} eMRs from cache.")
+        fin_data = {
+            'emrs': prev_core.get('muster_rolls', []),
+            'works': prev_core.get('financial_statement', []),
+            'summaries': prev_core.get('financial_summary', [])
+        }
+    else:
+        enrich_emr_working_dates(fin_data)
     
     # Step 3: Incomplete Works
     incomplete_works = scrape_incomplete_works(URL_INCOMPLETE)
+    if not incomplete_works and prev_core.get('incomplete_works'):
+        print(f" [FALLBACK] Incomplete works page down. Preserving {len(prev_core['incomplete_works'])} works from cache.")
+        incomplete_works = prev_core.get('incomplete_works', [])
     
     # Step 4: FTO Payments across all 183 batches
     fto_data = scrape_fto_data(URL_FTO, valid_jc_set=valid_jc_set)
-
-    # Step 4b: Cross-check every payment's Wagelist No. against eMR working periods
-    # so the passbook shows the month of WORK, not the month of PAYMENT.
-    enrich_passbook_with_working_periods(fto_data['worker_passbook'], fin_data)
+    if not fto_data.get('worker_passbook') and prev_passbook.get('worker_passbook'):
+        print(f" [FALLBACK] FTO module returned empty passbook. Preserving passbook from cache.")
+        fto_data['worker_passbook'] = prev_passbook.get('worker_passbook', {})
+        fto_data['fto_batches'] = prev_core.get('metadata', {}).get('stats', {}).get('fto_batches_count', 0)
+    else:
+        # Step 4b: Cross-check every payment's Wagelist No. against eMR working periods
+        enrich_passbook_with_working_periods(fto_data['worker_passbook'], fin_data)
     
     # Assemble core dashboard JSON payload (compact, sub-second load)
     core_data = {
